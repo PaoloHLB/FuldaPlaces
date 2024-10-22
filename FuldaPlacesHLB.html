@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Fulda Places HLB</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+      #map {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+      }
+      .popup-img {
+        max-width: 200px;
+        height: auto;
+      }
+      .logo {
+        width: 250px;
+        height: auto;
+      }
+      .info-box {
+        position: absolute;
+        top: 100px;
+        right: 10px;
+        width: 250px;
+        padding: 10px;
+        background-color: white;
+        border: 1px solid #ccc;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, opacity 0.3s ease;
+        z-index: 1000;
+      }
+      .info-box.minimized {
+        transform: translateX(220px);
+        opacity: 0;
+        cursor: pointer;
+      }
+      .info-box-title {
+        font-weight: bold;
+        text-align: center;
+      }
+      .info-box-content {
+        font-size: 14px;
+      }
+      .info-box-tab {
+        position: absolute;
+        top: 100px;
+        right: 0;
+        width: 40px;
+        height: 20px;
+        background-color: #007bff;
+        color: white;
+        text-align: center;
+        font-weight: bold;
+        line-height: 20px;
+        cursor: pointer;
+        transition: opacity 0.3s ease;
+        z-index: 1001;
+      }
+      .info-box-tab.hidden {
+        opacity: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map">
+      <a href="https://www.hs-fulda.de/hlb/" target="_blank" style="position:absolute;left:10px;bottom:10px;z-index:999;">
+        <img src="https://www.hs-fulda.de/assets/images/logo_header_hlb.svg" alt="HLB Logo" class="logo">
+      </a>
+    </div>
+
+    <!-- Info Box -->
+    <div class="info-box" id="infoBox">
+      <div class="info-box-title">FuldaPlaces</div>
+      <div class="info-box-content">
+        <p>FuldaPlaces ist ein Projekt der Hochschul- und Landesbibliothek Fulda. 
+        Hier finden Sie Sehenswürdigkeiten und bedeutende Orte im Landkreis Fulda. 
+        Möchten Sie mitmachen? Dann <a href="https://www.hs-fulda.de/hlb/" target="_blank">besuchen Sie unsere Website</a>.</p>
+      </div>
+    </div>
+
+    <!-- Minimiertes Tab (Lesezeichen) -->
+    <div class="info-box-tab" id="infoBoxTab">+</div>
+
+    <p>
+      <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">&copy; OpenStreetMap contributors</a>
+    </p>
+
+    <script>
+      const startCoords = [50.56177937198017, 9.672193165788338]; // Startkoordinaten
+      const startZoom = 14; // Startzoom-Level
+      const markerCoords = [50.55506258130247, 9.680450283212917]; // Markerposition für HLB
+      const fuldaerDomCoords = [50.55352015523406, 9.67307280235471]; // Markerposition für Fuldaer Dom
+      const map = L.map('map').setView(startCoords, startZoom); // Karte initialisieren
+
+      // Tile Layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+      }).addTo(map);
+
+      // Benutzerdefiniertes Icon für den HLB-Marker
+      const customIconHLB = L.icon({
+        iconUrl: 'https://paolohlb.github.io/FuldaPlaces/Mark_Informativ_Transparent.png',
+        iconSize: [38, 38],
+        iconAnchor: [19, 38],
+        popupAnchor: [0, -38]
+      });
+
+      // Marker für HLB mit Popup und benutzerdefiniertem Icon
+      const markerHLB = L.marker(markerCoords, { icon: customIconHLB }).addTo(map);
+      const popupContentHLB = `
+        <div>
+          <a href="https://www.hs-fulda.de/hlb/" target="_blank">
+            <img src="https://www.fuldaerzeitung.de/assets/images/0/5/5140-hochschul-und-landesbibliothek-fulda-1VqniKgVafec.jpg" 
+                 alt="Hochschul- und Landesbibliothek" class="popup-img">
+          </a>
+          <h3>Hochschul- und Landesbibliothek</h3>
+          <p>
+            Die Hochschul- und Landesbibliothek ist eine zentrale Einrichtung der Hochschule Fulda.
+            Zum einen sichert sie die Informations- und Wissensversorgung der Lehrenden und Studierenden der Hochschule Fulda,
+            zum anderen nimmt sie gemeinsam mit vier weiteren hessischen wissenschaftlichen Bibliotheken
+            landesbibliothekarische Aufgaben wahr.
+          </p>
+          <p>
+            <a href="https://www.hs-fulda.de/hlb/" target="_blank">Mehr erfahren</a>
+          </p>
+        </div>
+      `;
+      markerHLB.bindPopup(popupContentHLB);
+
+      // Benutzerdefiniertes Icon für den Fuldaer Dom
+      const customIconDom = L.icon({
+        iconUrl: 'https://paolohlb.github.io/FuldaPlaces/Mark_Old_Transparent.png',
+        iconSize: [38, 38],
+        iconAnchor: [19, 38],
+        popupAnchor: [0, -38]
+      });
+
+      // Marker für Fuldaer Dom mit Popup und benutzerdefiniertem Icon
+      const markerDom = L.marker(fuldaerDomCoords, { icon: customIconDom }).addTo(map);
+      const popupContentDom = `
+        <div>
+          <a href="https://www.bistum-fulda.de/bistum_fulda/kunst_musik/kunst/dom/dom-zu-fulda.php" target="_blank">
+            <img src="https://www.rhoenfuehrer.de/images/rf/entries/3075/dom-fulda-winter.jpg" 
+                 alt="Fuldaer Dom" class="popup-img">
+          </a>
+          <h3>Fuldaer Dom</h3>
+          <p>
+            Der Dom St. Salvator zu Fulda (Hoher Dom zu Fulda) ist die Kathedralkirche des Bistums Fulda und als 
+            Grabeskirche des heiligen Bonifatius Ziel der Bonifatiuswallfahrt.
+          </p>
+          <p>
+            <a href="https://www.bistum-fulda.de/bistum_fulda/kunst_musik/kunst/dom/dom-zu-fulda.php" target="_blank">Mehr Informationen</a>
+          </p>
+        </div>
+      `;
+      markerDom.bindPopup(popupContentDom);
+
+      // Layer für die Stadt Fulda
+      const fuldaStadtLayer = L.geoJSON(null, {
+        style: function (feature) {
+          return {
+            color: 'blue',
+            weight: 3,
+            fillOpacity: 0.1
+          };
+        }
+      }).addTo(map); // Dieser Layer wird beim Laden der Seite angezeigt
+
+      // Layer für den Landkreis Fulda
+      const fuldaLandkreisLayer = L.geoJSON(null, {
+        style: function (feature) {
+          return {
+            color: 'blue',
+            weight: 2,
+            fillOpacity: 0.1
+          };
+        }
+      }); // Dieser Layer wird nicht automatisch angezeigt
+
+      // GeoJSON für Stadt Fulda laden
+      fetch('https://paolohlb.github.io/FuldaPlaces/FuldaStadt.json')
+        .then(response => response.json())
+        .then(data => {
+          console.log("GeoJSON data loaded for Stadt Fulda:", data);
+          fuldaStadtLayer.addData(data); // Daten zum Layer hinzufügen
+          map.fitBounds(fuldaStadtLayer.getBounds()); // Karte an die Bounds von Stadt Fulda anpassen
+        })
+        .catch(error => {
+          console.error("Error loading GeoJSON data for Stadt Fulda:", error);
+        });
+
+      // GeoJSON für Landkreis Fulda laden
+      fetch('https://paolohlb.github.io/FuldaPlaces/gemeinden_simplify200.json')
+        .then(response => response.json())
+        .then(data => {
+          console.log("GeoJSON data loaded for Landkreis Fulda:", data);
+          fuldaLandkreisLayer.addData(data); // Daten zum Layer hinzufügen
+
+          // Grenzen (Bounds) des Landkreises setzen
+          const bounds = fuldaLandkreisLayer.getBounds();
+          map.setMaxBounds(bounds); // Begrenzung der Karte auf den Landkreis Fulda
+        })
+        .catch(error => {
+          console.error("Error loading GeoJSON data for Landkreis Fulda:", error);
+        });
+
+      // Layer-Kontrollkästchen hinzufügen, wobei nur der "Stadt Fulda"-Layer standardmäßig aktiv ist
+      L.control.layers(null, { 
+        "Stadt Fulda": fuldaStadtLayer, 
+        "Landkreis Fulda": fuldaLandkreisLayer 
+      }, {collapsed: false}).addTo(map);
+
+      // Reset zoom and center to the bounds of Stadt Fulda when zooming out
+      map.on('zoomend', function() {
+        if (map.getZoom() < 12) {
+          // Set zoom back to 12 and center the map on the Stadt Fulda bounds
+          map.fitBounds(fuldaStadtLayer.getBounds());
+        }
+      });
+
+      // Ensure the user stays within the bounds of Landkreis Fulda when panning
+      map.on('drag', function() {
+        map.panInsideBounds(map.getBounds(), { animate: true });
+      });
+
+      // InfoBox Funktionen
+      const infoBox = document.getElementById('infoBox');
+      const infoBoxTab = document.getElementById('infoBoxTab');
+      let isMinimized = false;
+
+      function minimizeInfoBox() {
+        if (!isMinimized) {
+          infoBox.classList.add('minimized');
+          infoBoxTab.classList.remove('hidden');
+          isMinimized = true;
+        }
+      }
+
+      function expandInfoBox() {
+        if (isMinimized) {
+          infoBox.classList.remove('minimized');
+          infoBoxTab.classList.add('hidden');
+          isMinimized = false;
+        }
+      }
+
+      map.on('zoomstart', minimizeInfoBox);
+      map.on('dragstart', minimizeInfoBox);
+
+      infoBoxTab.addEventListener('mouseenter', expandInfoBox);
+      infoBox.addEventListener('mouseleave', minimizeInfoBox);
+
+    </script>
+  </body>
+</html>
